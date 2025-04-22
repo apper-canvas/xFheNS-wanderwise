@@ -1,63 +1,49 @@
-import { MapPin, Star, Calendar, DollarSign } from "lucide-react";
+import { Star, MapPin, ChevronRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-function DestinationCard({ destination, onClick }) {
-  const { name, image, country, rating, type, budget, bestTime, description } = destination;
-  
+const DestinationCard = ({ destination }) => {
+  const { name, image, rating, reviews, price, description } = destination;
+
   return (
-    <div 
-      className="card card-hover cursor-pointer group h-full flex flex-col"
-      onClick={onClick}
+    <motion.div 
+      className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300"
+      whileHover={{ y: -5 }}
     >
-      <div className="relative h-48 overflow-hidden rounded-t-xl">
+      <div className="relative h-48 overflow-hidden">
         <img 
           src={image} 
           alt={name} 
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-        <div className="absolute bottom-0 left-0 p-4 text-white">
-          <div className="flex items-center">
-            <MapPin size={14} className="mr-1" />
-            <span className="text-sm">{country}</span>
-          </div>
-        </div>
-        <div className="absolute top-3 right-3 bg-white/90 dark:bg-surface-800/90 rounded-full px-2 py-1 flex items-center">
-          <Star size={14} className="text-yellow-500 mr-1" />
-          <span className="text-xs font-medium">{rating.toFixed(1)}</span>
+        <div className="absolute top-0 right-0 bg-blue-600 text-white px-3 py-1 m-2 rounded-full text-sm font-medium">
+          ${price}
         </div>
       </div>
       
-      <div className="p-4 flex-grow flex flex-col">
-        <h3 className="text-lg font-bold mb-1">{name}</h3>
-        
-        <div className="mb-3 flex flex-wrap gap-1">
-          {type.map(t => (
-            <span 
-              key={t} 
-              className="px-2 py-0.5 bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-300 rounded text-xs"
-            >
-              {t}
-            </span>
-          ))}
-        </div>
-        
-        <p className="text-surface-600 dark:text-surface-400 text-sm line-clamp-2 mb-4">
-          {description}
-        </p>
-        
-        <div className="mt-auto flex justify-between text-xs text-surface-500 dark:text-surface-400">
+      <div className="p-4">
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="text-lg font-bold text-gray-800 truncate">{name}</h3>
           <div className="flex items-center">
-            <Calendar size={14} className="mr-1" />
-            <span>{bestTime}</span>
-          </div>
-          <div className="flex items-center">
-            <DollarSign size={14} className="mr-1" />
-            <span>${budget}/day</span>
+            <Star className="text-yellow-500 w-4 h-4 fill-current" />
+            <span className="ml-1 text-sm font-medium">{rating}</span>
+            <span className="ml-1 text-xs text-gray-500">({reviews})</span>
           </div>
         </div>
+        
+        <div className="flex items-center mb-3">
+          <MapPin className="text-gray-400 w-4 h-4" />
+          <span className="ml-1 text-sm text-gray-500">{name.split(',')[1] || 'Destination'}</span>
+        </div>
+        
+        <p className="text-gray-600 text-sm mb-4 line-clamp-2">{description}</p>
+        
+        <button className="w-full flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition duration-200">
+          <span className="mr-1">Explore</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
       </div>
-    </div>
+    </motion.div>
   );
-}
+};
 
 export default DestinationCard;
