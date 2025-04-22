@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { MapPin, Calendar, Users, Search, TrendingUp, Compass, Plane, Hotel, Car } from "lucide-react";
 import MainFeature from "../components/MainFeature";
+import DestinationCarousel from "../components/DestinationCarousel";
 
 const Home = () => {
   const [activeTab, setActiveTab] = useState("flights");
@@ -42,6 +43,34 @@ const Home = () => {
       rating: 4.6,
       price: 1199,
     },
+    {
+      id: 5,
+      name: "New York City, USA",
+      image: "https://source.unsplash.com/random/600x400/?newyork",
+      rating: 4.7,
+      price: 1399,
+    },
+    {
+      id: 6,
+      name: "Rome, Italy",
+      image: "https://source.unsplash.com/random/600x400/?rome",
+      rating: 4.8,
+      price: 1299,
+    },
+    {
+      id: 7,
+      name: "Dubai, UAE",
+      image: "https://source.unsplash.com/random/600x400/?dubai",
+      rating: 4.8,
+      price: 1599,
+    },
+    {
+      id: 8,
+      name: "Sydney, Australia",
+      image: "https://source.unsplash.com/random/600x400/?sydney",
+      rating: 4.7,
+      price: 1899,
+    },
   ];
   
   const trendingDestinations = [
@@ -65,6 +94,26 @@ const Home = () => {
     },
   ];
 
+  // Ensure images are preloaded
+  useEffect(() => {
+    const preloadImages = () => {
+      const heroImage = new Image();
+      heroImage.src = "https://source.unsplash.com/random/1920x1080/?travel,landscape";
+      
+      popularDestinations.forEach(destination => {
+        const img = new Image();
+        img.src = destination.image;
+      });
+      
+      trendingDestinations.forEach(destination => {
+        const img = new Image();
+        img.src = destination.image;
+      });
+    };
+    
+    preloadImages();
+  }, []);
+
   return (
     <div>
       {/* Hero Section */}
@@ -74,8 +123,9 @@ const Home = () => {
             src="https://source.unsplash.com/random/1920x1080/?travel,landscape"
             alt="Travel landscape"
             className="w-full h-full object-cover"
+            loading="eager"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-surface-900/60 to-surface-900/30 backdrop-blur-sm"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-gray-900/60 to-gray-900/30 backdrop-blur-sm"></div>
         </div>
         
         <div className="container mx-auto px-4 py-16 md:py-24 relative z-10">
@@ -100,7 +150,7 @@ const Home = () => {
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap transition-all ${
                       activeTab === tab.id
-                        ? "bg-white text-primary font-medium"
+                        ? "bg-white text-blue-600 font-medium"
                         : "text-white hover:bg-white/10"
                     }`}
                   >
@@ -117,54 +167,25 @@ const Home = () => {
       </section>
       
       {/* Popular Destinations */}
-      <section className="py-12 md:py-16 bg-surface-50 dark:bg-surface-900">
+      <section className="py-12 md:py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl md:text-3xl font-bold">Popular Destinations</h2>
-            <a href="/destinations" className="text-primary hover:text-primary-dark flex items-center gap-1 font-medium">
+            <a href="/destinations" className="text-blue-600 hover:text-blue-800 flex items-center gap-1 font-medium">
               View all <span className="text-lg">→</span>
             </a>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {popularDestinations.map((destination) => (
-              <motion.div
-                key={destination.id}
-                whileHover={{ y: -8 }}
-                className="card card-hover group"
-              >
-                <div className="relative h-48 overflow-hidden rounded-t-xl">
-                  <img
-                    src={destination.image}
-                    alt={destination.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute top-3 right-3 bg-white/90 dark:bg-surface-800/90 backdrop-blur-sm px-2 py-1 rounded-lg text-sm font-medium flex items-center gap-1">
-                    <span className="text-yellow-500">★</span> {destination.rating}
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-                    <MapPin size={16} className="text-primary" />
-                    {destination.name}
-                  </h3>
-                  <div className="flex justify-between items-center">
-                    <span className="text-surface-600 dark:text-surface-400 text-sm">Starting from</span>
-                    <span className="text-lg font-bold">${destination.price}</span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          <DestinationCarousel destinations={popularDestinations} />
         </div>
       </section>
       
       {/* Trending Destinations */}
-      <section className="py-12 md:py-16 bg-white dark:bg-surface-800">
+      <section className="py-12 md:py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-              <TrendingUp size={24} className="text-accent" />
+              <TrendingUp size={24} className="text-blue-600" />
               Trending Now
             </h2>
           </div>
@@ -180,12 +201,13 @@ const Home = () => {
                   src={destination.image}
                   alt={destination.name}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  loading="lazy"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-surface-900/80 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-6">
                   <div className="flex justify-between items-center">
                     <h3 className="text-xl font-bold text-white">{destination.name}</h3>
-                    <span className="bg-accent/90 text-white px-2 py-1 rounded text-sm font-medium">
+                    <span className="bg-blue-600/90 text-white px-2 py-1 rounded text-sm font-medium">
                       {destination.change}
                     </span>
                   </div>
@@ -193,6 +215,65 @@ const Home = () => {
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+      
+      {/* Travel Categories */}
+      <section className="py-12 md:py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center">Explore by Category</h2>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { name: "Beach Escapes", icon: "🏖️", image: "https://source.unsplash.com/random/300x300/?beach" },
+              { name: "Mountain Getaways", icon: "🏔️", image: "https://source.unsplash.com/random/300x300/?mountain" },
+              { name: "City Breaks", icon: "🏙️", image: "https://source.unsplash.com/random/300x300/?city" },
+              { name: "Cultural Tours", icon: "🏛️", image: "https://source.unsplash.com/random/300x300/?culture" }
+            ].map((category, index) => (
+              <motion.div
+                key={index}
+                whileHover={{ y: -5 }}
+                className="relative rounded-lg overflow-hidden h-40 md:h-56 group cursor-pointer"
+              >
+                <img 
+                  src={category.image} 
+                  alt={category.name}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-gray-900/40 to-transparent"></div>
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-4">
+                  <span className="text-2xl mb-2">{category.icon}</span>
+                  <h3 className="font-semibold text-center">{category.name}</h3>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+      
+      {/* Newsletter */}
+      <section className="py-12 md:py-16 bg-blue-600 text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">Get Travel Inspiration</h2>
+          <p className="max-w-2xl mx-auto mb-8">
+            Subscribe to our newsletter and receive exclusive offers, travel tips, and destination inspiration.
+          </p>
+          
+          <form className="max-w-md mx-auto flex">
+            <input
+              type="email"
+              placeholder="Your email address"
+              className="flex-grow px-4 py-3 rounded-l-lg text-gray-900 focus:outline-none"
+              required
+            />
+            <button
+              type="submit"
+              className="bg-gray-900 hover:bg-gray-800 px-6 py-3 rounded-r-lg font-medium transition-colors"
+            >
+              Subscribe
+            </button>
+          </form>
         </div>
       </section>
     </div>

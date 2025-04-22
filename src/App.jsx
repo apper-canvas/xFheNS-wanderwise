@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { Menu, X, Map, Home, Compass, Clock, User, Settings } from 'lucide-react';
 import Destinations from './pages/Destinations';
+import HomePage from './pages/Home';
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -26,7 +27,7 @@ function App() {
               {/* Desktop Navigation */}
               <nav className="hidden md:flex space-x-8">
                 <Link to="/" className="text-gray-600 hover:text-blue-600 transition-colors py-2">Home</Link>
-                <Link to="/destinations" className="text-blue-600 font-medium border-b-2 border-blue-600 py-2">Destinations</Link>
+                <Link to="/destinations" className="text-gray-600 hover:text-blue-600 transition-colors py-2">Destinations</Link>
                 <Link to="/trips" className="text-gray-600 hover:text-blue-600 transition-colors py-2">Trips</Link>
                 <Link to="/guides" className="text-gray-600 hover:text-blue-600 transition-colors py-2">Travel Guides</Link>
                 <Link to="/about" className="text-gray-600 hover:text-blue-600 transition-colors py-2">About</Link>
@@ -57,7 +58,7 @@ function App() {
             <div className="md:hidden bg-white">
               <div className="container mx-auto px-4 py-3 space-y-3">
                 <Link to="/" className="block text-gray-600 hover:text-blue-600 py-2" onClick={toggleMenu}>Home</Link>
-                <Link to="/destinations" className="block text-blue-600 font-medium py-2" onClick={toggleMenu}>Destinations</Link>
+                <Link to="/destinations" className="block text-gray-600 hover:text-blue-600 py-2" onClick={toggleMenu}>Destinations</Link>
                 <Link to="/trips" className="block text-gray-600 hover:text-blue-600 py-2" onClick={toggleMenu}>Trips</Link>
                 <Link to="/guides" className="block text-gray-600 hover:text-blue-600 py-2" onClick={toggleMenu}>Travel Guides</Link>
                 <Link to="/about" className="block text-gray-600 hover:text-blue-600 py-2" onClick={toggleMenu}>About</Link>
@@ -77,7 +78,7 @@ function App() {
         {/* Main Content */}
         <main className="flex-grow">
           <Routes>
-            <Route path="/" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Welcome to WanderWise</h1></div>} />
+            <Route path="/" element={<HomePage />} />
             <Route path="/destinations" element={<Destinations />} />
             <Route path="/trips" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Trips Page</h1></div>} />
             <Route path="/guides" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Travel Guides Page</h1></div>} />

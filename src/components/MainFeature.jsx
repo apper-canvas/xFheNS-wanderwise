@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Calendar, Users, Search, Plane, Hotel, Car, Compass, AlertCircle, Check } from "lucide-react";
 import { format, addDays } from "date-fns";
@@ -8,11 +8,14 @@ const MainFeature = ({ activeTab }) => {
   const [departureDate, setDepartureDate] = useState(format(addDays(new Date(), 7), "yyyy-MM-dd"));
   const [returnDate, setReturnDate] = useState(format(addDays(new Date(), 14), "yyyy-MM-dd"));
   const [travelers, setTravelers] = useState(1);
+  const [showDestinationDropdown, setShowDestinationDropdown] = useState(false);
   const [showTravelersDropdown, setShowTravelersDropdown] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  
+  const dropdownRef = useRef(null);
   
   const popularDestinations = {
     flights: ["New York", "Tokyo", "London", "Paris", "Sydney"],
@@ -117,6 +120,7 @@ const MainFeature = ({ activeTab }) => {
   
   const handleDestinationSelect = (dest) => {
     setDestination(dest);
+    setShowDestinationDropdown(false);
   };
   
   const handleTravelersChange = (value) => {
@@ -131,17 +135,21 @@ const MainFeature = ({ activeTab }) => {
     setSearchResults([]);
     setError("");
     setSuccess("");
+    setShowDestinationDropdown(false);
   }, [activeTab]);
   
-  // Close travelers dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
-    const handleClickOutside = () => {
-      setShowTravelersDropdown(false);
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDestinationDropdown(false);
+        setShowTravelersDropdown(false);
+      }
     };
     
-    document.addEventListener("click", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
   
@@ -164,7 +172,7 @@ const MainFeature = ({ activeTab }) => {
     if (isSearching) {
       return (
         <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
         </div>
       );
     }
@@ -183,26 +191,26 @@ const MainFeature = ({ activeTab }) => {
               key={result.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white dark:bg-surface-800 rounded-lg p-4 shadow-md"
+              className="bg-white rounded-lg p-4 shadow-md"
             >
               {activeTab === "flights" && (
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   <div>
-                    <div className="font-medium text-surface-900 dark:text-white">{result.airline}</div>
+                    <div className="font-medium text-gray-900">{result.airline}</div>
                     <div className="flex items-center gap-3 mt-1">
                       <div className="text-lg font-semibold">{result.departure}</div>
-                      <div className="text-xs text-surface-500 dark:text-surface-400">
+                      <div className="text-xs text-gray-500">
                         {result.duration}
                       </div>
                       <div className="text-lg font-semibold">{result.arrival}</div>
                     </div>
-                    <div className="text-sm text-surface-500 dark:text-surface-400 mt-1">
+                    <div className="text-sm text-gray-500 mt-1">
                       {result.stops === 0 ? "Direct" : `${result.stops} stop${result.stops > 1 ? "s" : ""}`}
                     </div>
                   </div>
                   <div className="flex flex-col items-end">
-                    <div className="text-xl font-bold text-surface-900 dark:text-white">${result.price}</div>
-                    <button className="mt-2 btn-primary text-sm py-1">Select</button>
+                    <div className="text-xl font-bold text-gray-900">${result.price}</div>
+                    <button className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm">Select</button>
                   </div>
                 </div>
               )}
@@ -210,23 +218,23 @@ const MainFeature = ({ activeTab }) => {
               {activeTab === "hotels" && (
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   <div>
-                    <div className="font-medium text-surface-900 dark:text-white">{result.name}</div>
+                    <div className="font-medium text-gray-900">{result.name}</div>
                     <div className="flex items-center gap-1 mt-1">
                       <span className="text-yellow-500">★</span>
                       <span>{result.rating}</span>
                     </div>
                     <div className="flex flex-wrap gap-2 mt-2">
                       {result.amenities.map((amenity, index) => (
-                        <span key={index} className="text-xs bg-surface-100 dark:bg-surface-700 text-surface-600 dark:text-surface-300 px-2 py-1 rounded">
+                        <span key={index} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
                           {amenity}
                         </span>
                       ))}
                     </div>
                   </div>
                   <div className="flex flex-col items-end">
-                    <div className="text-xl font-bold text-surface-900 dark:text-white">${result.price}</div>
-                    <div className="text-sm text-surface-500 dark:text-surface-400">per night</div>
-                    <button className="mt-2 btn-primary text-sm py-1">Select</button>
+                    <div className="text-xl font-bold text-gray-900">${result.price}</div>
+                    <div className="text-sm text-gray-500">per night</div>
+                    <button className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm">Select</button>
                   </div>
                 </div>
               )}
@@ -234,13 +242,13 @@ const MainFeature = ({ activeTab }) => {
               {activeTab === "packages" && (
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   <div>
-                    <div className="font-medium text-surface-900 dark:text-white">{result.name}</div>
-                    <div className="text-sm text-surface-500 dark:text-surface-400 mt-1">
+                    <div className="font-medium text-gray-900">{result.name}</div>
+                    <div className="text-sm text-gray-500 mt-1">
                       Duration: {result.duration}
                     </div>
                     <div className="flex flex-wrap gap-2 mt-2">
                       {result.includes.map((item, index) => (
-                        <span key={index} className="text-xs bg-surface-100 dark:bg-surface-700 text-surface-600 dark:text-surface-300 px-2 py-1 rounded flex items-center gap-1">
+                        <span key={index} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded flex items-center gap-1">
                           <Check size={12} />
                           {item}
                         </span>
@@ -248,9 +256,9 @@ const MainFeature = ({ activeTab }) => {
                     </div>
                   </div>
                   <div className="flex flex-col items-end">
-                    <div className="text-xl font-bold text-surface-900 dark:text-white">${result.price}</div>
-                    <div className="text-sm text-surface-500 dark:text-surface-400">total</div>
-                    <button className="mt-2 btn-primary text-sm py-1">Select</button>
+                    <div className="text-xl font-bold text-gray-900">${result.price}</div>
+                    <div className="text-sm text-gray-500">total</div>
+                    <button className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm">Select</button>
                   </div>
                 </div>
               )}
@@ -258,22 +266,22 @@ const MainFeature = ({ activeTab }) => {
               {activeTab === "cars" && (
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   <div>
-                    <div className="font-medium text-surface-900 dark:text-white">{result.type}</div>
-                    <div className="text-sm text-surface-500 dark:text-surface-400 mt-1">
+                    <div className="font-medium text-gray-900">{result.type}</div>
+                    <div className="text-sm text-gray-500 mt-1">
                       {result.company}
                     </div>
                     <div className="flex flex-wrap gap-2 mt-2">
                       {result.features.map((feature, index) => (
-                        <span key={index} className="text-xs bg-surface-100 dark:bg-surface-700 text-surface-600 dark:text-surface-300 px-2 py-1 rounded">
+                        <span key={index} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
                           {feature}
                         </span>
                       ))}
                     </div>
                   </div>
                   <div className="flex flex-col items-end">
-                    <div className="text-xl font-bold text-surface-900 dark:text-white">${result.price}</div>
-                    <div className="text-sm text-surface-500 dark:text-surface-400">per day</div>
-                    <button className="mt-2 btn-primary text-sm py-1">Select</button>
+                    <div className="text-xl font-bold text-gray-900">${result.price}</div>
+                    <div className="text-sm text-gray-500">per day</div>
+                    <button className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm">Select</button>
                   </div>
                 </div>
               )}
@@ -285,11 +293,14 @@ const MainFeature = ({ activeTab }) => {
   };
   
   return (
-    <div>
+    <div ref={dropdownRef}>
       <form onSubmit={handleSearch}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="relative">
-            <div className="flex items-center bg-white/10 border border-white/20 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-white">
+            <div 
+              className="flex items-center bg-white/10 border border-white/20 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-white"
+              onClick={() => setShowDestinationDropdown(true)}
+            >
               <span className="pl-3 text-white">
                 <MapPin size={18} />
               </span>
@@ -297,15 +308,23 @@ const MainFeature = ({ activeTab }) => {
                 type="text"
                 placeholder={`Where to${activeTab === "flights" ? " fly" : activeTab === "hotels" ? " stay" : activeTab === "cars" ? " pick up" : ""}`}
                 value={destination}
-                onChange={(e) => setDestination(e.target.value)}
+                onChange={(e) => {
+                  setDestination(e.target.value);
+                  if (e.target.value === '') {
+                    setShowDestinationDropdown(true);
+                  } else {
+                    setShowDestinationDropdown(false);
+                  }
+                }}
+                onFocus={() => setShowDestinationDropdown(true)}
                 className="w-full bg-transparent border-0 text-white placeholder-white/70 p-3 focus:outline-none"
               />
             </div>
             
-            {destination === "" && (
-              <div className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-surface-800 rounded-lg shadow-lg z-10 overflow-hidden">
+            {showDestinationDropdown && (
+              <div className="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg shadow-lg z-10 overflow-hidden">
                 <div className="p-2">
-                  <div className="text-xs font-medium text-surface-500 dark:text-surface-400 px-2 py-1">
+                  <div className="text-xs font-medium text-gray-500 px-2 py-1">
                     Popular {activeTab}
                   </div>
                   {popularDestinations[activeTab].map((dest, index) => (
@@ -313,7 +332,7 @@ const MainFeature = ({ activeTab }) => {
                       key={index}
                       type="button"
                       onClick={() => handleDestinationSelect(dest)}
-                      className="w-full text-left px-2 py-2 hover:bg-surface-100 dark:hover:bg-surface-700 rounded text-surface-800 dark:text-surface-200"
+                      className="w-full text-left px-2 py-2 hover:bg-gray-100 rounded text-gray-800"
                     >
                       {dest}
                     </button>
@@ -371,24 +390,24 @@ const MainFeature = ({ activeTab }) => {
             
             {showTravelersDropdown && (
               <div 
-                className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-surface-800 rounded-lg shadow-lg z-10 p-3"
+                className="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg shadow-lg z-10 p-3"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-surface-800 dark:text-surface-200">Travelers</span>
+                  <span className="text-gray-800">Travelers</span>
                   <div className="flex items-center gap-3">
                     <button
                       type="button"
                       onClick={() => handleTravelersChange(travelers - 1)}
-                      className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-100 dark:bg-surface-700 text-surface-800 dark:text-surface-200"
+                      className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-800"
                     >
                       -
                     </button>
-                    <span className="text-surface-800 dark:text-surface-200 w-4 text-center">{travelers}</span>
+                    <span className="text-gray-800 w-4 text-center">{travelers}</span>
                     <button
                       type="button"
                       onClick={() => handleTravelersChange(travelers + 1)}
-                      className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-100 dark:bg-surface-700 text-surface-800 dark:text-surface-200"
+                      className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-800"
                     >
                       +
                     </button>
@@ -402,7 +421,7 @@ const MainFeature = ({ activeTab }) => {
         <div className="mt-4 flex justify-center">
           <button
             type="submit"
-            className="btn-primary px-8 py-3 text-lg flex items-center gap-2"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-md text-lg flex items-center gap-2 transition-colors"
           >
             {renderTabIcon()}
             Search {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
