@@ -3,74 +3,21 @@ import { motion } from "framer-motion";
 import { MapPin, Calendar, Users, Search, TrendingUp, Compass, Plane, Hotel, Car } from "lucide-react";
 import MainFeature from "../components/MainFeature";
 import DestinationCarousel from "../components/DestinationCarousel";
+import { fetchPopularDestinations } from "../services/destinationService";
+import { subscribeToNewsletter } from "../services/newsletterService";
 
 const Home = () => {
   const [activeTab, setActiveTab] = useState("flights");
+  const [popularDestinations, setPopularDestinations] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [email, setEmail] = useState("");
+  const [subscribeStatus, setSubscribeStatus] = useState({ message: "", type: "" });
   
   const tabs = [
     { id: "flights", label: "Flights", icon: <Plane size={18} /> },
     { id: "hotels", label: "Hotels", icon: <Hotel size={18} /> },
     { id: "packages", label: "Packages", icon: <Compass size={18} /> },
     { id: "cars", label: "Car Rentals", icon: <Car size={18} /> },
-  ];
-  
-  const popularDestinations = [
-    {
-      id: 1,
-      name: "Bali, Indonesia",
-      image: "https://source.unsplash.com/random/600x400/?bali",
-      rating: 4.8,
-      price: 1299,
-    },
-    {
-      id: 2,
-      name: "Santorini, Greece",
-      image: "https://source.unsplash.com/random/600x400/?santorini",
-      rating: 4.9,
-      price: 1599,
-    },
-    {
-      id: 3,
-      name: "Tokyo, Japan",
-      image: "https://source.unsplash.com/random/600x400/?tokyo",
-      rating: 4.7,
-      price: 1499,
-    },
-    {
-      id: 4,
-      name: "Paris, France",
-      image: "https://source.unsplash.com/random/600x400/?paris",
-      rating: 4.6,
-      price: 1199,
-    },
-    {
-      id: 5,
-      name: "New York City, USA",
-      image: "https://source.unsplash.com/random/600x400/?newyork",
-      rating: 4.7,
-      price: 1399,
-    },
-    {
-      id: 6,
-      name: "Rome, Italy",
-      image: "https://source.unsplash.com/random/600x400/?rome",
-      rating: 4.8,
-      price: 1299,
-    },
-    {
-      id: 7,
-      name: "Dubai, UAE",
-      image: "https://source.unsplash.com/random/600x400/?dubai",
-      rating: 4.8,
-      price: 1599,
-    },
-    {
-      id: 8,
-      name: "Sydney, Australia",
-      image: "https://source.unsplash.com/random/600x400/?sydney",
-      rating: 4.7,
-      price: 1899,
-    },
   ];
   
   const trendingDestinations = [
@@ -94,25 +41,62 @@ const Home = () => {
     },
   ];
 
-  // Ensure images are preloaded
+  // Load popular destinations from Apper backend
   useEffect(() => {
-    const preloadImages = () => {
-      const heroImage = new Image();
-      heroImage.src = "https://source.unsplash.com/random/1920x1080/?travel,landscape";
-      
-      popularDestinations.forEach(destination => {
-        const img = new Image();
-        img.src = destination.image;
-      });
-      
-      trendingDestinations.forEach(destination => {
-        const img = new Image();
-        img.src = destination.image;
-      });
+    const loadPopularDestinations = async () => {
+      try {
+        setIsLoading(true);
+        const destinations = await fetchPopularDestinations(8);
+        setPopularDestinations(destinations);
+      } catch (error) {
+        console.error("Error loading popular destinations:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
     
-    preloadImages();
+    loadPopularDestinations();
   }, []);
+
+  // Handle newsletter subscription
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    
+    if (!email) {
+      setSubscribeStatus({
+        message: "Please enter your email address",
+        type: "error"
+      });
+      return;
+    }
+    
+    try {
+      const result = await subscribeToNewsletter(email);
+      
+      if (result.success) {
+        setSubscribeStatus({
+          message: "Successfully subscribed to the newsletter!",
+          type: "success"
+        });
+        setEmail("");
+      } else {
+        setSubscribeStatus({
+          message: result.message || "Failed to subscribe. Please try again.",
+          type: "error"
+        });
+      }
+      
+      // Clear status message after 3 seconds
+      setTimeout(() => {
+        setSubscribeStatus({ message: "", type: "" });
+      }, 3000);
+    } catch (error) {
+      setSubscribeStatus({
+        message: "An error occurred. Please try again later.",
+        type: "error"
+      });
+    }
+  };
 
   return (
     <div>
@@ -176,7 +160,13 @@ const Home = () => {
             </a>
           </div>
           
-          <DestinationCarousel destinations={popularDestinations} />
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+            </div>
+          ) : (
+            <DestinationCarousel destinations={popularDestinations} />
+          )}
         </div>
       </section>
       
@@ -260,20 +250,30 @@ const Home = () => {
             Subscribe to our newsletter and receive exclusive offers, travel tips, and destination inspiration.
           </p>
           
-          <form className="max-w-md mx-auto flex">
+          <form className="max-w-md mx-auto flex flex-col sm:flex-row" onSubmit={handleSubscribe}>
             <input
               type="email"
               placeholder="Your email address"
-              className="flex-grow px-4 py-3 rounded-l-lg text-gray-900 focus:outline-none"
+              className="flex-grow px-4 py-3 rounded-l-lg sm:rounded-r-none rounded-r-lg mb-2 sm:mb-0 text-gray-900 focus:outline-none"
               required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
             <button
               type="submit"
-              className="bg-gray-900 hover:bg-gray-800 px-6 py-3 rounded-r-lg font-medium transition-colors"
+              className="bg-gray-900 hover:bg-gray-800 px-6 py-3 rounded-r-lg sm:rounded-l-none rounded-l-lg font-medium transition-colors"
             >
               Subscribe
             </button>
           </form>
+          
+          {subscribeStatus.message && (
+            <div className={`mt-4 ${
+              subscribeStatus.type === "success" ? "text-green-100" : "text-red-100"
+            }`}>
+              {subscribeStatus.message}
+            </div>
+          )}
         </div>
       </section>
     </div>
